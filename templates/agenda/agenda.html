@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda | EcoWheater</title>
+  <link rel="stylesheet" href="agenda.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <a href="../inicio.html">Inicio</a>
+    <a href="#">Agenda</a>
+    <a href="#">Comparar Lugares</a>
+    <a href="#">Educacion</a>
+    <a href="#">Minijuegos</a>
+  </nav>
+
+  <!-- CONTENEDOR CALENDARIO -->
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button id="prev">◀</button>
+      <h2 id="monthYear"></h2>
+      <button id="next">▶</button>
+    </div>
+
+    <div class="calendar" id="calendar">
+      <!-- Días generados con JS -->
+    </div>
+  </div>
+
+  <!-- MODAL EVENTO -->
+  <div class="modal" id="eventModal">
+    <div class="modal-content">
+      <h3>Agregar evento</h3>
+      <input type="text" id="eventTitle" placeholder="Título del evento">
+      <textarea id="eventDesc" rows="3" placeholder="Descripción"></textarea>
+      <div class="modal-buttons">
+        <button id="cancelBtn">Cancelar</button>
+        <button id="saveBtn">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 EcoWheater | Agenda inspirada en Google Calendar
+  </footer>
+
+  <script src="agenda.js"></script>
+</body>
+</html>
