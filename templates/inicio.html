@@ -14,6 +14,7 @@
       box-sizing: border-box;
     }
 
+    
     body {
       font-family: 'Outfit', sans-serif;
       background: radial-gradient(circle at 25% 25%, #0a1930, #00010f 80%);
@@ -239,23 +240,23 @@
 
   <!-- NAVBAR -->
   <nav>
-    <a href="#">Pronostico</a>
+    <a href="{{ url_for('pronostico') }}">Pronóstico</a>
     <a href="#">Agenda</a>
     <a href="#">Comparar Lugares</a>
     <a href="#">Educacion</a>
     <a href="#">Minijuegos</a>
-    <a href="#">Login</a>
+    <a href="{{ url_for('iniciosesion') }}">Login</a>
     <a href="#">ChatBot</a>
     <a href="#">Mi Perfil</a>
   </nav>
 
   <!-- HERO SECTION -->
   <section class="hero">
-    <img src="earth.png" alt="Earth Transparent">
+    <img src="{{ url_for('static', filename='earth.png') }}" alt="Earth Transparent">
     <div class="hero-text">
       <h1>ECOWHEATER</h1>
       <p>Consult, learn and understand the weather intelligently.</p>
-      <button onclick="location.href='index.html'">See the weather now</button>
+      <button onclick="location.href='{{ url_for('pronostico') }}'">See the weather now</button>
       <button onclick="location.href='educational.html'">Explore educational section</button>
     </div>
   </section>

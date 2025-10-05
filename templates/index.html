@@ -2,40 +2,51 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pronóstico Climatológico</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="utf-8" />
+    <title>Solar System Launch</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <style>
+        body.home {
+            background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: opacity 1s ease-in-out;
+        }
+
+        body.fade-out {
+            opacity: 0;
+        }
+
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
 </head>
 
-<body>
-    <div class="container">
-        <header>
-            <h1>Pronóstico Climatológico</h1>
-            <p>Usa tu ubicación actual o ingresa coordenadas y una fecha para obtener una predicción climatológica
-                basada en 10 años de datos y compararla con datos reales históricos.</p>
-        </header>
-
-        <main>
-            <div id="map"></div>
-
-            <div class="form-container">
-                <button id="get-location-btn">📍 Usar mi Ubicación Actual</button>
-                <p>- O -</p>
-                <input type="text" id="manual-lat" placeholder="Latitud (ej. -9.93)">
-                <input type="text" id="manual-lon" placeholder="Longitud (ej. -76.24)">
-                <input type="date" id="manual-date">
-                <input type="time" id="manual-time" value="14:00">
-                <button id="get-manual-btn">Consultar Datos</button>
-            </div>
-
-            <div class="results" id="results">
-            </div>
-        </main>
+<body class="home">
+    <div class="overlay flex items-center justify-center min-h-screen">
+        <button
+            class="bg-white/90 text-black font-bold py-4 px-8 rounded-full flex items-center space-x-3 text-2xl hover:bg-white transition-colors duration-300 backdrop-blur-sm"
+            id="launchBtn">
+            <span class="transform -rotate-45">🚀</span>
+            <span>LAUNCH</span>
+        </button>
     </div>
-    <script src="/static/script.js"></script>
+
+    <script>
+        document.getElementById("launchBtn").addEventListener("click", () => {
+            document.body.classList.add("fade-out");
+            setTimeout(() => {
+                // Redireccionamiento real a earth.html
+                window.location.href = "/inicio";
+            }, 1000);
+        });
+    </script>
 </body>
 
 </html>
