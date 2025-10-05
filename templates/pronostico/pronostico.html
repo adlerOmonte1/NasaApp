@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoWheater - Pronóstico</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="pronostico.css">
+    <style>
+        /* Estilos adicionales para la sección de video */
+        .video-container {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .video-container h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .video-container video {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .video-info {
+            margin-top: 10px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav>
+        <a href="../agenda/agenda.html">Agenda</a>
+        <a href="#">Comparar Lugares</a>
+        <a href="../educational.html">Educacion</a>
+        <a href="#">Minijuegos</a>
+        <a href="#">Login</a>
+        <a href="#">ChatBot</a>
+        <a href="#">Mi Perfil</a>
+    </nav>
+
+    <!-- PRONOSTICO SECTION -->
+    <section class="pronostico">
+        <div class="container">
+            <h2>Pronóstico Climatológico</h2>
+            <p class="subtitle">Usa tu ubicación actual o ingresa coordenadas y una fecha para obtener una predicción climatológica</p>
+            
+            <div id="map"></div>
+            
+            <div class="form-container">
+                <button id="get-location-btn">📍 Usar mi Ubicación Actual</button>
+                <p class="separator">- O -</p>
+                <div class="input-group">
+                    <input type="text" id="manual-lat" placeholder="Latitud (ej. -9.93)">
+                    <input type="text" id="manual-lon" placeholder="Longitud (ej. -76.24)">
+                    <input type="date" id="manual-date">
+                    <input type="time" id="manual-time" value="14:00">
+                </div>
+                <button id="get-manual-btn">Consultar Datos</button>
+            </div>
+
+            <div class="results" id="results">
+                <!-- Los resultados se mostrarán aquí -->
+            </div>
+            
+            <!-- Sección para mostrar el video -->
+            <div class="video-container" id="video-container">
+                <h3>Vista del lugar seleccionado</h3>
+                <video id="location-video" controls>
+                    Tu navegador no soporta el elemento de video.
+                </video>
+                <p class="video-info" id="video-info"></p>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Base de datos de videos por ubicación y hora
+        const videoDatabase = {
+            // Machu Picchu
+            "-13.1631,-72.5450": {
+                day: "Videos-202510051023345Z-1-001/MachuPichuDia.mp4",
+                night: "Videos-202510051023345Z-1-001/MachuPicchuNoche.mp4"
+            },
+            // Tingo María
+            "-9.2899,-75.9964": {
+                sunny: "Videos-202510051023345Z-1-001/TingoMariaSol.mp4",
+                rainy: "Videos-202510051023345Z-1-001/TingoMariaLluvia.mp4"
+            }
+        };
+
+        // Función para determinar el video a mostrar
+        function getVideoForLocation(lat, lon, time) {
+            const coordinates = `${lat.toFixed(4)},${lon.toFixed(4)}`;
+            
+            // Verificar si tenemos videos para estas coordenadas
+            if (!videoDatabase[coordinates]) {
+                return null;
+            }
+            
+            const locationVideos = videoDatabase[coordinates];
+            const hour = parseInt(time.split(':')[0]);
+            
+            // Para Machu Picchu
+            if (coordinates === "-13.1631,-72.5450") {
+                // Determinar si es día (6am-6pm) o noche
+                if (hour >= 6 && hour < 18) {
+                    return {
+                        src: locationVideos.day,
+                        description: "Machu Picchu durante el día"
+                    };
+                } else {
+                    return {
+                        src: locationVideos.night,
+                        description: "Machu Picchu durante la noche"
+                    };
+                }
+            }
+            
+            // Para Tingo María
+            if (coordinates === "-9.2899,-75.9964") {
+                // Simulamos condiciones climáticas basadas en la hora
+                // (En una implementación real, usaríamos datos reales de clima)
+                const isSunny = hour >= 8 && hour < 16; // Asumimos sol entre 8am-4pm
+                
+                if (isSunny) {
+                    return {
+                        src: locationVideos.sunny,
+                        description: "Tingo María con sol"
+                    };
+                } else {
+                    return {
+                        src: locationVideos.rainy,
+                        description: "Tingo María con lluvia"
+                    };
+                }
+            }
+            
+            return null;
+        }
+
+        // Inicialización del mapa
+        let map;
+        let marker;
+        
+        function initMap() {
+            // Inicializar el mapa centrado en Perú
+            map = L.map('map').setView([-9.19, -75.015], 6);
+            
+            // Añadir capa de tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Añadir marcador inicial
+            marker = L.marker([-9.19, -75.015]).addTo(map);
+            
+            // Manejar clics en el mapa
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                document.getElementById('manual-lat').value = e.latlng.lat.toFixed(4);
+                document.getElementById('manual-lon').value = e.latlng.lng.toFixed(4);
+            });
+        }
+
+        // Función para obtener ubicación actual
+        document.getElementById('get-location-btn').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    // Actualizar campos de entrada
+                    document.getElementById('manual-lat').value = lat.toFixed(4);
+                    document.getElementById('manual-lon').value = lon.toFixed(4);
+                    
+                    // Mover el marcador
+                    marker.setLatLng([lat, lon]);
+                    map.setView([lat, lon], 13);
+                    
+                    // Obtener fecha y hora actual
+                    const now = new Date();
+                    document.getElementById('manual-date').value = now.toISOString().split('T')[0];
+                    document.getElementById('manual-time').value = 
+                        now.getHours().toString().padStart(2, '0') + ':' + 
+                        now.getMinutes().toString().padStart(2, '0');
+                });
+            } else {
+                alert("La geolocalización no es compatible con este navegador.");
+            }
+        });
+
+        // Función para consultar datos manuales
+        document.getElementById('get-manual-btn').addEventListener('click', function() {
+            const lat = parseFloat(document.getElementById('manual-lat').value);
+            const lon = parseFloat(document.getElementById('manual-lon').value);
+            const date = document.getElementById('manual-date').value;
+            const time = document.getElementById('manual-time').value;
+            
+            if (isNaN(lat) || isNaN(lon) || !date || !time) {
+                alert("Por favor, complete todos los campos correctamente.");
+                return;
+            }
+            
+            // Mover el marcador
+            marker.setLatLng([lat, lon]);
+            map.setView([lat, lon], 13);
+            
+            // Mostrar resultados
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>Información del lugar</h3>
+                <p><strong>Coordenadas:</strong> ${lat.toFixed(4)}, ${lon.toFixed(4)}</p>
+                <p><strong>Fecha:</strong> ${date}</p>
+                <p><strong>Hora:</strong> ${time}</p>
+            `;
+            
+            // Obtener y mostrar el video correspondiente
+            const videoData = getVideoForLocation(lat, lon, time);
+            const videoContainer = document.getElementById('video-container');
+            const videoElement = document.getElementById('location-video');
+            const videoInfo = document.getElementById('video-info');
+            
+            if (videoData) {
+                videoElement.src = videoData.src;
+                videoInfo.textContent = videoData.description;
+                videoContainer.style.display = 'block';
+                
+                // Intentar reproducir el video
+                videoElement.load();
+            } else {
+                videoContainer.style.display = 'none';
+                alert("No hay videos disponibles para esta ubicación.");
+            }
+        });
+
+        // Inicializar el mapa cuando se carga la página
+        window.onload = initMap;
+    </script>
+</body>
+</html>
